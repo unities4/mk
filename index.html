@@ -243,9 +243,9 @@ button, input, select, textarea {
 }
 
 .save-mk-btn {
-  background: var(--amber-bg);
-  color: var(--amber);
-  border-color: var(--amber-brd);
+  background: var(--green-bg);
+  color: var(--green-2);
+  border-color: var(--green-brd);
 }
 .save-mk-btn:hover {
   background: #FDE68A;
@@ -2826,7 +2826,7 @@ input[type="checkbox"], input[type="radio"] {
                 <div class="form-group full-width">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
                         <label class="form-label" style="margin-bottom:0;">
-                            Название
+                            Название<span id="foNameRequired" style="color:red;display:none;">*</span>
                             <span class="info-icon" data-tooltip="Укажите уникальное название функциональной области">?</span>
                         </label>
                         <div style="display:flex;gap:10px;align-items:center;">
@@ -8164,11 +8164,27 @@ input[type="checkbox"], input[type="radio"] {
                 rowAccessZI.style.display = 'none';
                 rowParent.style.display = 'none';
                 rowRelease.style.display = 'none';
+                // Показываем предупреждающую плашку
+                let warningBanner = document.getElementById('existingFOWarningBanner');
+                if (!warningBanner) {
+                    warningBanner = document.createElement('div');
+                    warningBanner.id = 'existingFOWarningBanner';
+                    warningBanner.style.cssText = 'display:flex;align-items:flex-start;gap:10px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:12px;';
+                    warningBanner.innerHTML = '<svg style="flex-shrink:0;margin-top:1px" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                        + '<span style="font-size:12.5px;color:#92400E;line-height:1.5;">При добавлении имеющейся ФО в ITSM системе уже назначенные в ней участники не отобразятся. Для работы с имеющимися МК рекомендуется использовать режим работы <strong>«2. Загрузка МК с дашборда»</strong>.</span>';
+                    const settingsForm = document.querySelector('.settings-form');
+                    settingsForm.insertBefore(warningBanner, settingsForm.firstChild);
+                } else {
+                    warningBanner.style.display = 'flex';
+                }
             } else {
                 rowLevelPortal.style.display = '';
                 rowAccessZI.style.display = '';
                 rowParent.style.display = '';
                 rowRelease.style.display = '';
+                // Скрываем предупреждающую плашку
+                const warningBanner = document.getElementById('existingFOWarningBanner');
+                if (warningBanner) warningBanner.style.display = 'none';
             }
             
             // Определяем, нужно ли показывать опцию "не менять"
@@ -8177,6 +8193,10 @@ input[type="checkbox"], input[type="radio"] {
             const showNoChangeOption = settings && !settings.isNew && 
                 (settings.sourceType === 'update' || settings.createdFromParticipantsOnly);
             
+            // Показываем/скрываем маркер обязательности поля Название
+            const foNameRequired = document.getElementById('foNameRequired');
+            if (foNameRequired) foNameRequired.style.display = isExistingFOMode ? 'inline' : 'none';
+
             // Показываем поле ID ФО для ФО, созданных из листа Участники, И для режима "имеющаяся ФО"
             const foIdGroup = document.getElementById('foIdGroup');
             const foIdExternal = document.getElementById('foIdExternal');
@@ -8331,6 +8351,12 @@ input[type="checkbox"], input[type="radio"] {
             // Проверка обязательного поля ID ФО для ФО, созданных из листа Участники
             const foIdExternal = document.getElementById('foIdExternal').value.trim();
             if (existingSettings.createdFromParticipantsOnly) {
+                const foNameVal = document.getElementById('foName').value.trim();
+                if (!foNameVal) {
+                    alert('Поле «Название» обязательно для заполнения');
+                    document.getElementById('foName').focus();
+                    return;
+                }
                 if (!foIdExternal) {
                     alert('Для функциональных областей, созданных из листа "Участники", поле "ID Функциональной области" обязательно для заполнения');
                     document.getElementById('foIdExternal').focus();
@@ -8431,7 +8457,8 @@ input[type="checkbox"], input[type="radio"] {
                 noKeFormat: existingSettings.noKeFormat || false,
                 sourceType: existingSettings.sourceType,
                 originalSettings: existingSettings.originalSettings,
-                originalData: existingSettings.originalData
+                originalData: existingSettings.originalData,
+                initialSnapshot: existingSettings.initialSnapshot  // сохраняем снимок первоначальных настроек
             };
             
             
@@ -8440,8 +8467,8 @@ input[type="checkbox"], input[type="radio"] {
                 createFOBlock(currentEditingFO);
                 // После создания блока сбрасываем флаг isNew
                 foSettings[currentEditingFO].isNew = false;
-                // Для вручную созданных ФО сохраняем снимок начальных настроек
-                if (existingSettings.wasManuallyCreated) {
+                // Для вручную созданных и «имеющихся» ФО сохраняем снимок начальных настроек
+                if (existingSettings.wasManuallyCreated || existingSettings.createdFromParticipantsOnly) {
                     foSettings[currentEditingFO].initialSnapshot = { ...settings };
                 }
             } else {
@@ -12416,8 +12443,8 @@ input[type="checkbox"], input[type="radio"] {
                             // Для ФО, созданных из листа Участники
                             // Столбец B - externalId (ID ФО)
                             foRow.getCell(2).value = settings.externalId || '';
-                            // Столбец C - текущее название
-                            foRow.getCell(3).value = settings.name;
+                            // Столбец C - исходное название (до изменений)
+                            foRow.getCell(3).value = settings.initialSnapshot ? settings.initialSnapshot.name : settings.name;
                             
                             // Столбец D - новое название (только если название было изменено)
                             if (changedFields.name) {
@@ -13349,7 +13376,12 @@ input[type="checkbox"], input[type="radio"] {
                         // Для "Информ. об окончании этапа" добавляем каждый этап отдельно
                         role.stages.forEach(stageNum => {
                             const stageNames = STAGE_NAMES; // единая глобальная константа;
-                            rolesList.push(`${role.name} ${stageNames[stageNum]}`);
+                            // Исключение: этап "Утверждение документации" выгружается как "Документирование и закрытие"
+                            if (stageNames[stageNum] === 'Утверждение документации') {
+                                rolesList.push('Информ. об окончании этапа Документирование и закрытие');
+                            } else {
+                                rolesList.push(`${role.name} ${stageNames[stageNum]}`);
+                            }
                         });
                     } else {
                         // Для остальных ролей используем fullName если есть, иначе name
@@ -15706,7 +15738,7 @@ input[type="checkbox"], input[type="radio"] {
             <p style="margin:0 0 24px;color:#6b7280;font-size:14px;line-height:1.6;">Файл <strong>Шаблон_МК.xlsx</strong> загружен в браузере. Теперь его нужно загрузить в ITSM систему.</p>
             <div style="background:linear-gradient(135deg,#f0f7ff 0%,#e8f3ff 100%);border:1px solid #b3d4f5;border-radius:12px;padding:18px 20px;text-align:left;margin-bottom:24px;">
                 <div style="display:flex;align-items:flex-start;gap:10px;">
-                    <div style="width:28px;height:28px;min-width:28px;background:linear-gradient(135deg,#1E1B4B,#6366F1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-top:1px;">
+                    <div style="width:28px;height:28px;min-width:28px;background:linear-gradient(135deg, var(--indigo) 0%, var(--indigo-2) 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-top:1px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     </div>
                     <div>

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Маршрут ЗИ</title>
+<style>
+/* Manrope — локальные шрифты (data/fonts/) */
+/* latin */
+@font-face { font-family: 'Manrope'; font-weight: 400; font-style: normal; font-display: swap; unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  src: url('data/fonts/manrope-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 500; font-style: normal; font-display: swap; unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  src: url('data/fonts/manrope-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 600; font-style: normal; font-display: swap; unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  src: url('data/fonts/manrope-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 700; font-style: normal; font-display: swap; unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  src: url('data/fonts/manrope-latin-700-normal.woff2') format('woff2'); }
+/* cyrillic */
+@font-face { font-family: 'Manrope'; font-weight: 400; font-style: normal; font-display: swap; unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+  src: url('data/fonts/manrope-cyrillic-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 500; font-style: normal; font-display: swap; unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+  src: url('data/fonts/manrope-cyrillic-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 600; font-style: normal; font-display: swap; unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+  src: url('data/fonts/manrope-cyrillic-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 700; font-style: normal; font-display: swap; unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+  src: url('data/fonts/manrope-cyrillic-700-normal.woff2') format('woff2'); }
+</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+
+body{
+  font-family:'Manrope','Segoe UI',sans-serif;
+  background:linear-gradient(160deg,#0f0c29 0%,#302b63 50%,#24243e 100%);
+  color:#e6edf3;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── Toolbar ── */
+.toolbar{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:14px;
+  padding:0 24px;height:56px;
+  background:rgba(0,0,0,0.35);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  z-index:20;
+}
+.tb-logo{font-size:20px;}
+.tb-main{flex:1;min-width:0;}
+.tb-title{font-size:17px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-sub{font-size:13px;color:rgba(255,255,255,0.35);margin-top:1px;}
+.tb-badge{font-size:11px;font-weight:600;padding:3px 11px;border-radius:20px;white-space:nowrap;}
+.badge-nt{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.4);}
+.badge-t {background:rgba(16,185,129,.2);color:#6ee7b7;border:1px solid rgba(16,185,129,.4);}
+
+.legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:5px;font-size:13px;color:rgba(255,255,255,0.4);white-space:nowrap;}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.leg-bar{width:18px;height:3px;border-radius:2px;flex-shrink:0;}
+
+/* ── Footer legend ── */
+.footer-legend{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
+  padding:0 24px;height:44px;
+  background:rgba(0,0,0,0.40);
+  backdrop-filter:blur(16px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  z-index:20;
+}
+
+.btn-close{
+  flex-shrink:0;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;color:rgba(255,255,255,.8);font-size:15px;font-weight:600;
+  padding:7px 16px;cursor:pointer;font-family:inherit;
+  transition:background .2s;white-space:nowrap;
+}
+.btn-close:hover{background:rgba(255,255,255,.2);}
+
+.btn-filter{
+  flex-shrink:0;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;color:rgba(255,255,255,.55);font-size:13px;font-weight:600;
+  padding:6px 13px;cursor:pointer;font-family:inherit;
+  transition:all .2s;white-space:nowrap;
+}
+.btn-filter.active-req{
+  background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.5);
+  color:#a5b4fc;
+}
+.btn-filter.active-miss{
+  background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.45);
+  color:#fca5a5;
+}
+.btn-filter:hover{background:rgba(255,255,255,.12);}
+.btn-refresh{
+  flex-shrink:0;
+  background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);
+  border-radius:8px;color:#a5b4fc;font-size:15px;font-weight:600;
+  padding:7px 14px;cursor:pointer;font-family:inherit;
+  transition:all .2s;white-space:nowrap;
+}
+.btn-refresh:hover{background:rgba(99,102,241,.28);border-color:rgba(99,102,241,.6);}
+.btn-refresh.spinning{pointer-events:none;opacity:.7;}
+.btn-refresh.spinning .refresh-icon{display:inline-block;animation:spin .6s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+/* ── Scroll canvas ── */
+.canvas{
+  flex:1;overflow-y:scroll;overflow-x:hidden;
+  padding:36px 24px 60px;
+  position:relative;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(139,92,246,.45) transparent;
+}
+
+/* Webkit custom scrollbar */
+.canvas::-webkit-scrollbar{
+  width:6px;
+}
+.canvas::-webkit-scrollbar-track{
+  background:transparent;
+}
+.canvas::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(168,85,247,.6),rgba(99,102,241,.5));
+  border-radius:10px;
+  border:none;
+}
+.canvas::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,rgba(168,85,247,.85),rgba(99,102,241,.75));
+}
+.canvas::-webkit-scrollbar-corner{
+  background:transparent;
+}
+
+/* particles */
+#ptcl{position:fixed;inset:0;pointer-events:none;z-index:0;}
+
+/* ── Start / End node ── */
+.flow-start,.flow-end{
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;z-index:2;
+  margin-bottom:0;
+}
+.start-circle{
+  width:68px;height:68px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  box-shadow:0 0 32px rgba(168,85,247,.6),0 0 64px rgba(168,85,247,.25);
+  animation:glow-s 3s ease-in-out infinite;
+}
+@keyframes glow-s{
+  0%,100%{box-shadow:0 0 28px rgba(168,85,247,.6),0 0 56px rgba(168,85,247,.25);}
+  50%     {box-shadow:0 0 44px rgba(168,85,247,.9),0 0 90px rgba(168,85,247,.4);}
+}
+.start-label{margin-top:8px;font-size:16px;font-weight:700;color:#c4b5fd;letter-spacing:.3px;}
+.start-sub{margin-top:3px;font-size:13px;color:rgba(255,255,255,.35);}
+
+
+
+/* ── Stage block ── */
+.stage-block{
+  position:relative;z-index:2;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .45s ease,transform .45s ease;
+}
+.stage-block.vis{opacity:1;transform:translateY(0);}
+
+/* stage header strip */
+.stage-header{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:9px 24px;
+  border-radius:24px;
+  font-size:15px;font-weight:700;color:#fff;
+  margin:0 auto;
+  width:fit-content;
+  position:relative;z-index:3;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.stage-icon{font-size:20px;}
+
+/* stage header alert: red glow + border + pulse */
+.stage-header-alert{
+  border:1.5px solid rgba(239,68,68,.7) !important;
+  animation:stage-alert-pulse 2.2s ease-in-out infinite;
+}
+@keyframes stage-alert-pulse{
+  0%,100%{
+    box-shadow:0 4px 20px rgba(0,0,0,.3),
+               0 0 0 0 rgba(239,68,68,0),
+               0 0 14px rgba(239,68,68,.25);
+  }
+  50%{
+    box-shadow:0 4px 20px rgba(0,0,0,.3),
+               0 0 0 4px rgba(239,68,68,.15),
+               0 0 28px rgba(239,68,68,.55);
+  }
+}
+
+/* ── Seq rows ── */
+.seq-rows{margin-top:12px;}
+
+.seq-separator{
+  display:flex;align-items:center;gap:8px;
+  margin:8px auto;max-width:600px;
+  font-size:12px;font-weight:600;color:rgba(255,255,255,.2);
+  letter-spacing:.5px;
+}
+.seq-separator .sep-line{flex:1;height:1px;background:rgba(255,255,255,.08);}
+
+/* One seq row = horizontal spread of cards */
+.seq-row{
+  display:flex;align-items:flex-start;justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  position:relative;
+  margin-top:26px; /* reserve space for floating bars above cards */
+}
+
+/* Left + right card columns */
+.cards-side{
+  display:flex;align-items:flex-start;
+  gap:8px;
+  flex-wrap:wrap;
+  flex:1;
+  min-width:0;
+}
+.cards-side.left{justify-content:flex-end;padding-right:0;}
+.cards-side.right{justify-content:flex-start;padding-left:0;}
+
+/* horizontal connector from side to center node */
+.h-conn{
+  width:28px;flex-shrink:0;
+  height:2px;
+  align-self:center;
+  margin-top:0;
+  position:relative;
+}
+.h-conn.left{background:linear-gradient(270deg,rgba(255,255,255,.12),transparent);}
+.h-conn.right{background:linear-gradient(90deg,rgba(255,255,255,.12),transparent);}
+
+/* center node on seq rows (only first row per stage has it) */
+.seq-center-node{
+  flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;
+  width:80px;
+  position:relative;z-index:3;
+}
+
+.miss-badge{
+  position:absolute;top:-3px;right:-3px;
+  width:14px;height:14px;border-radius:50%;
+  background:#ef4444;border:2px solid #0f0c29;
+  animation:dot-pulse 1.8s ease-in-out infinite;
+}
+.seq-center-label{
+  margin-top:5px;font-size:10px;font-weight:600;
+  color:rgba(255,255,255,.55);text-align:center;line-height:1.3;
+}
+
+/* placeholder center for extra seq rows (no node) */
+.seq-center-gap{width:80px;flex-shrink:0;}
+
+/* ── Card wrapper ── */
+.card-wrap{
+  position:relative;
+  flex-shrink:0;
+  padding-top:26px; /* always reserve bar space so all card bodies top-align */
+  border-radius:10px;
+  transition:transform .2s,box-shadow .2s;
+}
+.card-wrap:hover{transform:translateY(-2px);}
+.card-wrap:hover .card{box-shadow:0 10px 28px rgba(0,0,0,.45);}
+
+/* Floating bar above card */
+.card-wrap-bar{
+  position:absolute;
+  top:0;left:0;right:0;
+  height:26px;
+  border-radius:6px 6px 0 0;
+  padding:0 10px;
+  font-size:11.5px;font-weight:700;letter-spacing:.3px;
+  display:flex;align-items:center;gap:4px;
+}
+.card-wrap-bar.bar-alert{
+  background:rgba(239,68,68,.18);
+  border:1px solid rgba(239,68,68,.3);
+  border-bottom:none;
+  color:#fca5a5;
+}
+.card-wrap-bar.bar-cond{
+  background:rgba(251,146,60,.15);
+  border:1px solid rgba(251,146,60,.35);
+  border-bottom:none;
+  color:#fdba74;
+}
+
+/* Alert wrapper: glow + border pulsation covering bar + card */
+.card-wrap.wrap-alert{
+  animation:wrap-alert-pulse 2.5s ease-in-out infinite;
+}
+@keyframes wrap-alert-pulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(239,68,68,.1);}
+  50%     {box-shadow:0 0 0 2px rgba(239,68,68,.35),0 0 22px rgba(239,68,68,.18);}
+}
+
+/* ── Card ── */
+.card{
+  width:260px;flex-shrink:0;
+  border-radius:10px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(8px);
+}
+/* When bar is above, square off top corners and remove top border */
+.card-wrap-bar ~ .card{
+  border-radius:0 0 10px 10px;
+  border-top:none;
+}
+.card.card-alert{
+  border-color:rgba(239,68,68,.45);
+}
+/* card with conditional border */
+.card.card-cond{
+  border-color:rgba(251,146,60,.3);
+}
+@keyframes border-pulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(239,68,68,.15);}
+  50%     {box-shadow:0 0 0 2px rgba(239,68,68,.4),0 0 20px rgba(239,68,68,.12);}
+}
+
+.tb-optional{background:rgba(107,114,128,.2);color:rgba(255,255,255,.5);border:1px solid rgba(107,114,128,.35);}
+
+.card-strip{height:3px;}
+.strip-agree{background:linear-gradient(90deg,#3b82f6,#6366f1);}
+.strip-agree-alert{background:linear-gradient(90deg,#ef4444,#dc2626);}
+.strip-agree-cond{background:linear-gradient(90deg,#fb923c,#f97316);}
+.strip-task {background:linear-gradient(90deg,#f59e0b,#f97316);}
+
+.card-head{
+  padding:8px 10px 6px;
+  display:flex;align-items:center;gap:6px;
+}
+.type-badge{
+  font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:4px;
+}
+.tb-agree{background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.3);}
+.tb-task {background:rgba(245,158,11,.18);color:#fcd34d;border:1px solid rgba(245,158,11,.3);}
+
+
+.card-desc{
+  padding:0 10px 7px;
+  font-size:13px;color:rgba(255,255,255,.6);line-height:1.4;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.card-ptcp{padding:7px 10px 8px;display:flex;flex-direction:column;gap:4px;}
+.ptcp-role-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
+
+.p-row{display:flex;align-items:flex-start;gap:5px;}
+.p-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.p-dot.ok  {background:#22c55e;box-shadow:0 0 5px rgba(34,197,94,.7);}
+.p-dot.miss{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.9);animation:dot-pulse 1.8s ease-in-out infinite;}
+.p-dot.cond{background:transparent;border:1.5px dashed #fb923c;}
+@keyframes dot-pulse{
+  0%,100%{box-shadow:0 0 5px rgba(239,68,68,.6);}
+  50%     {box-shadow:0 0 14px rgba(239,68,68,1);}
+}
+.p-name{font-size:13px;font-weight:600;color:#e6edf3;line-height:1.3;}
+.p-name.miss{font-size:13px;color:rgba(239,68,68,.85);font-style:italic;font-weight:400;}
+.p-name.cond{font-size:13px;color:rgba(255,255,255,.3);font-style:italic;font-weight:400;}
+.cond-note{font-size:11px;color:#fdba74;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.35);border-radius:8px;padding:3px 8px;display:block;margin-top:4px;line-height:1.4;}
+
+/* empty side placeholder when only one side has cards */
+.cards-side-empty{flex:1;}
+
+/* bottom divider under seq-row (shown only when no separator follows) */
+.seq-bottom-line{
+  display:flex;align-items:center;gap:8px;
+  margin:8px auto 8px;max-width:600px;
+}
+.seq-bottom-line .sep-line{flex:1;height:1px;background:rgba(255,255,255,.08);}
+
+/* parallel marker */
+.par-label{
+  display:flex;align-items:center;gap:8px;
+  margin:4px auto 4px;max-width:600px;
+  font-size:12px;font-weight:600;color:rgba(255,255,255,.2);
+  letter-spacing:.5px;
+}
+.par-label .sep-line{flex:1;height:1px;background:rgba(255,255,255,.08);}
+</style>
+</head>
+<body>
+
+<canvas id="ptcl"></canvas>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <span class="tb-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
+  <div class="tb-main">
+    <div class="tb-title" id="tbTitle">Маршрут ЗИ</div>
+    <div class="tb-sub" id="tbSub"></div>
+  </div>
+
+  <div id="tbBadge"></div>
+  <button class="btn-filter" id="btnFilterReq" onclick="setFilter('req')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Только обязательные</button>
+  <button class="btn-filter" id="btnFilterMiss" onclick="setFilter('miss')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Не назначены</button>
+  <button class="btn-refresh" id="btnRefresh" onclick="refreshData()" title="Перечитать данные"><span class="refresh-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></span> Обновить</button>
+  <button class="btn-close" onclick="closeViz()">✕ Закрыть</button>
+</div>
+
+<div class="canvas" id="canvas"></div>
+
+<div class="footer-legend">
+  <div class="leg"><div class="leg-dot" style="background:#22c55e;box-shadow:0 0 5px rgba(34,197,94,.7)"></div>Назначен</div>
+  <div class="leg"><div class="leg-dot" style="background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.8)"></div>Обязательно, не назначен</div>
+  <div class="leg"><div class="leg-dot" style="border:1.5px dashed #fb923c;"></div>Условное (по умолчанию не создаётся)</div>
+  <div class="leg"><div class="leg-bar" style="background:linear-gradient(90deg,#3b82f6,#6366f1)"></div>Согласование</div>
+  <div class="leg"><div class="leg-bar" style="background:linear-gradient(90deg,#f59e0b,#f97316)"></div>Задача</div>
+</div>
+
+<!-- Модальное окно предупреждения о неполных данных -->
+<div id="routeWarningModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);align-items:center;justify-content:center;">
+  <div style="background:#1e1b3a;border:1px solid rgba(251,191,36,0.4);border-radius:20px;padding:36px 40px;max-width:560px;width:92%;box-shadow:0 24px 64px rgba(0,0,0,0.6);font-family:'Manrope',sans-serif;position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div style="width:48px;height:48px;border-radius:12px;background:rgba(251,191,36,0.15);border:1.5px solid rgba(251,191,36,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <h2 style="margin:0;font-size:19px;font-weight:700;color:#fbbf24;line-height:1.3;">Обратите внимание</h2>
+    </div>
+    <p style="margin:0 0 16px;font-size:15px;color:rgba(255,255,255,0.88);line-height:1.6;">
+      В системе отсутствует информация по уже назначенным участникам МК и отображается только то, что вы добавили/изменили.
+    </p>
+    <p style="margin:0 0 28px;font-size:14px;color:rgba(255,255,255,0.55);line-height:1.6;">
+      Чтобы увидеть полную картину, воспользуйтесь режимом работы:<br>
+      <span style="color:rgba(255,255,255,0.8);font-weight:600;">2. Актуализация уже имеющихся функциональных областей и МК → 2. Загрузка МК с дашборда</span>
+    </p>
+    <div style="display:flex;justify-content:flex-end;">
+      <button onclick="document.getElementById('routeWarningModal').style.display='none'" style="padding:11px 28px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#fbbf24);font-size:14px;font-weight:700;color:#1c1917;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(251,191,36,0.35);">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Close: notify parent or just history.back
+function closeViz() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage('closeRouteViz', '*');
+  } else {
+    window.close();
+  }
+}
+
+// ── Global state (declared first to avoid TDZ) ──
+let filterMode = 'all'; // 'all' | 'req' | 'miss'
+let D = null;
+try { D = JSON.parse(localStorage.getItem('routeVizData') || 'null'); } catch(e) {}
+
+function setFilter(mode) {
+  filterMode = (filterMode === mode) ? 'all' : mode;
+  document.getElementById('btnFilterReq').classList.toggle('active-req',  filterMode === 'req');
+  document.getElementById('btnFilterMiss').classList.toggle('active-miss', filterMode === 'miss');
+  render();
+}
+
+// Флаг: была ли уже перерисовка через StorageEvent во время текущего refresh
+var _refreshRendered = false;
+
+// StorageEvent: слушаем обновление данных от главной вкладки
+window.addEventListener('storage', function(e) {
+  if (e.key === 'routeVizData' && e.newValue) {
+    try { D = JSON.parse(e.newValue); } catch(err) {}
+    _refreshRendered = true; // помечаем, что уже обновили
+    render();
+  }
+});
+
+function refreshData() {
+  var btn = document.getElementById('btnRefresh');
+  if (btn) btn.classList.add('spinning');
+
+  _refreshRendered = false; // сбрасываем флаг перед запросом
+
+  // Запрашиваем свежие данные от главной вкладки
+  localStorage.setItem('routeVizRefreshReq', String(Date.now()));
+
+  // Через 600мс: если StorageEvent уже пришёл и render() выполнен — только убираем анимацию.
+  // Если нет (данные не менялись) — перерисовываем сами.
+  setTimeout(function() {
+    if (!_refreshRendered) {
+      try {
+        var fresh = localStorage.getItem('routeVizData');
+        if (fresh) D = JSON.parse(fresh);
+      } catch(e) {}
+      render();
+    }
+    if (btn) btn.classList.remove('spinning');
+    _refreshRendered = false;
+  }, 600);
+}
+
+
+const STAGE_ICONS = {
+  'Инициирование':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>','Утверждение':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>','Оценка':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  'Утверждение оценки':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="20"/><path d="M5 7l7-4 7 4"/><path d="M5 12l-2 5h4l-2-5z"/><path d="M19 12l-2 5h4l-2-5z"/></svg>','Планирование':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>','Утверждение планирования':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  'Реализация':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>','Тестирование':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>','Подтверждение':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  'Документирование':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>','Утверждение документации':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+};
+const STAGE_BG = {
+  'Инициирование':'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+  'Утверждение':'linear-gradient(135deg,#6d28d9,#8b5cf6)',
+  'Оценка':'linear-gradient(135deg,#065f46,#10b981)',
+  'Утверждение оценки':'linear-gradient(135deg,#92400e,#f59e0b)',
+  'Планирование':'linear-gradient(135deg,#0e7490,#22d3ee)',
+  'Утверждение планирования':'linear-gradient(135deg,#1e3a5f,#60a5fa)',
+  'Реализация':'linear-gradient(135deg,#78350f,#f97316)',
+  'Тестирование':'linear-gradient(135deg,#7f1d1d,#ef4444)',
+  'Подтверждение':'linear-gradient(135deg,#064e3b,#34d399)',
+  'Документирование':'linear-gradient(135deg,#1f2937,#6b7280)',
+  'Утверждение документации':'linear-gradient(135deg,#312e81,#6366f1)'
+};
+
+// Required roles from requiredAssignments in main file (mirrors it)
+const BASE_REQUIRED = {
+  'Владелец автоматизируемого бизнес-процесса': 'all',
+  'Координатор ЗИ': 'all',
+  'Бизнес-эксперт': [1,4,5],
+  'Ключевой бизнес-эксперт': [2,4,6,11],
+  'Эксперт этапа': [1],  // required on stage 1; other stages depend on context
+  'Ответственный за сопровождение и развитие': [3,5,7,10],
+  'Администратор': [7,8],
+  'Бизнес-тестировщик': [8,9],
+  'Архитектор': [4,11]
+};
+const SPECIAL_ROLES = ['Специалист по ИБ','Координатор ВК','Эксперт ДВК'];
+const SPECIAL_FO_KW = ['Изменения ролевой модели','Обновление версии','Общефункциональные изменения'];
+
+function isRequired(roleName, stageNum, isSpecialFO, item) {
+  // Item-level override: always required regardless of FO type
+  if (item && item.alwaysRequired) return true;
+  // These roles are only mandatory for special functional areas (not Ключевой бизнес-эксперт — it follows BASE_REQUIRED)
+  const COND_ROLES = ['Координатор ВК','Специалист по ИБ'];
+  if (!isSpecialFO && COND_ROLES.includes(roleName)) return false;
+  const r = BASE_REQUIRED[roleName];
+  if (!r) return false;
+  if (r === 'all') return true;
+  if (Array.isArray(r) && r.includes(stageNum)) return true;
+  if (isSpecialFO && SPECIAL_ROLES.includes(roleName)) return true;
+  return false;
+}
+
+// Schema: { seq, type, role, stageName? (for Эксперт этапа), desc }
+const SCHEMA = {
+  'нетиповой': [
+    { stageName:'Инициирование', stageNum:1, items:[
+      { seq:10, type:'Согласование', role:'Эксперт этапа',  sn:'Инициирование', desc:'Согласовать корректность постановки изменения' },
+      { seq:10, type:'Согласование', role:'Бизнес-эксперт',                     desc:'Согласовать корректность постановки изменения' },
+      { seq:11, type:'Задача',       role:'Бизнес-аналитик',                    desc:'Обогащение постановки ЗИ', optional:true }
+    ]},
+    { stageName:'Утверждение', stageNum:2, items:[
+      { seq:20, type:'Согласование', role:'Координатор ВК',          desc:'Оценить влияние изменений на контрольные процедуры' },
+      { seq:20, type:'Согласование', role:'Эксперт ДВК',             desc:'Согласовать корректность постановки изменения' },
+      { seq:20, type:'Согласование', role:'Ключевой бизнес-эксперт', desc:'Согласовать необходимость внесения изменений' },
+      { seq:20, type:'Согласование', role:'Методолог',               desc:'Согласовать необходимость внесения изменений' },
+      { seq:20, type:'Согласование', role:'Сервис-менеджер',         desc:'Согласовать бюджет' },
+      { seq:20, type:'Согласование', role:'Эксперт этапа', sn:'Утверждение', desc:'Согласовать необходимость внесения изменений' }
+    ]},
+    { stageName:'Оценка', stageNum:3, items:[
+      { seq:31, type:'Задача', role:'Ответственный за сопровождение и развитие', desc:'Оценка ЗИ' }
+    ]},
+    { stageName:'Утверждение оценки', stageNum:4, items:[
+      { seq:40, type:'Согласование', role:'Эксперт ДВК',              desc:'Утверждение оценки ЗИ' },
+      { seq:40, type:'Согласование', role:'Архитектор',               desc:'Утверждение оценки ЗИ' },
+      { seq:40, type:'Согласование', role:'Ключевой бизнес-эксперт',  desc:'Утверждение оценки ЗИ' },
+      { seq:40, type:'Согласование', role:'Эксперт бизнес-процессов', desc:'Оценить изменение бизнес-процессов' },
+      { seq:40, type:'Согласование', role:'Координатор ВК',           desc:'Утверждение оценки ЗИ' },
+      { seq:40, type:'Согласование', role:'Специалист по ИБ',         desc:'Утверждение оценки' },
+      { seq:40, type:'Согласование', role:'Сервис-менеджер',          desc:'Согласовать бюджет' },
+      { seq:40, type:'Согласование', role:'Эксперт этапа', sn:'Утверждение оценки', desc:'Утверждение оценки ЗИ' },
+      { seq:40, type:'Согласование', role:'Бизнес-эксперт',           desc:'Утверждение оценки ЗИ' }
+    ]},
+    { stageName:'Планирование', stageNum:5, items:[
+      { seq:51, type:'Задача', role:'Ответственный за сопровождение и развитие', desc:'Планирование сроков ЗИ' }
+    ]},
+    { stageName:'Утверждение планирования', stageNum:6, items:[
+      { seq:60, type:'Согласование', role:'Эксперт этапа', sn:'Утверждение планирования', desc:'Утверждение планирования' },
+      { seq:60, type:'Согласование', role:'Ключевой бизнес-эксперт', desc:'Утверждение планирования' }
+    ]},
+    { stageName:'Реализация', stageNum:7, items:[
+      { seq:81, type:'Задача', role:'Ответственный за сопровождение и развитие', desc:'Подготовка тестовых сценариев', optional:true },
+      { seq:81, type:'Задача', role:'Администратор',                              desc:'Перенос изменения в тестовую среду' },
+      { seq:81, type:'Задача', role:'Ответственный за сопровождение и развитие', desc:'Реализация ЗИ', _k:'r' }
+    ]},
+    { stageName:'Тестирование', stageNum:8, items:[
+      { seq:90, type:'Согласование', role:'Эксперт этапа', sn:'Тестирование', desc:'Проверить корректность изменений в тестовой среде' },
+      { seq:90, type:'Согласование', role:'Эксперт ДВК',       desc:'Проверить корректность изменений в тестовой среде' },
+      { seq:90, type:'Согласование', role:'Бизнес-тестировщик', desc:'Проверить корректность изменений в тестовой среде' },
+      { seq:95, type:'Задача',        role:'Администратор',     desc:'Перенос изменения в продуктивную среду' }
+    ]},
+    { stageName:'Подтверждение', stageNum:9, items:[
+      { seq:100, type:'Согласование', role:'Эксперт этапа', sn:'Подтверждение', desc:'Подтвердить корректность изменений в продуктивной среде' },
+      { seq:100, type:'Согласование', role:'Бизнес-тестировщик', desc:'Подтвердить корректность изменений в продуктивной среде' }
+    ]},
+    { stageName:'Документирование', stageNum:10, items:[
+      { seq:111, type:'Задача', role:'Ответственный за сопровождение и развитие', desc:'Документирование ЗИ' },
+      { seq:111, type:'Задача', role:'Эксперт этапа', sn:'Документирование', desc:'Документирование ЗИ' },
+      { seq:111, type:'Задача', role:'Эксперт бизнес-процессов', desc:'Изменение бизнес-процессов', optional:true }
+    ]},
+    { stageName:'Утверждение документации', stageNum:11, items:[
+      { seq:120, type:'Согласование', role:'Эксперт ДВК',             desc:'Согласование документации по ЗИ' },
+      { seq:120, type:'Согласование', role:'Ключевой бизнес-эксперт', desc:'Согласование документации по ЗИ' },
+      { seq:120, type:'Согласование', role:'Координатор ВК',          desc:'Утверждение документации' },
+      { seq:120, type:'Согласование', role:'Специалист по ИБ',        desc:'Утверждение документации' },
+      { seq:120, type:'Согласование', role:'Эксперт этапа', sn:'Утверждение документации', desc:'Согласование документации по ЗИ' },
+      { seq:120, type:'Согласование', role:'Архитектор',              desc:'Согласование документации по ЗИ' }
+    ]}
+  ],
+  'типовой': [
+    { stageName:'Инициирование', stageNum:1, items:[
+      { seq:10, type:'Согласование', role:'Бизнес-эксперт',                       desc:'Необходимо согласовать корректность постановки изменения' },
+      { seq:10, type:'Согласование', role:'Эксперт этапа', sn:'Инициирование',    desc:'Необходимо согласовать корректность постановки изменения' }
+    ]},
+    { stageName:'Утверждение', stageNum:2, items:[
+      { seq:20, type:'Согласование', role:'Методолог',                             desc:'Требуется согласовать необходимость внесения изменений' },
+      { seq:20, type:'Согласование', role:'Ключевой бизнес-эксперт',              desc:'Требуется согласовать необходимость внесения изменений' },
+      { seq:20, type:'Согласование', role:'Эксперт этапа', sn:'Утверждение',      desc:'Требуется согласовать необходимость внесения изменений' }
+    ]},
+    { stageName:'Реализация', stageNum:7, items:[
+      { seq:79, type:'Задача', role:'Ответственный за сопровождение и развитие',  desc:'Планирование сроков ТЗИ' },
+      { seq:80, type:'Задача', role:'Ответственный за сопровождение и развитие',  desc:'Реализация ТЗИ' },
+      { seq:80, type:'Задача', role:'Администратор',                               desc:'Перенос изменения в тестовую среду' }
+    ]},
+    { stageName:'Тестирование', stageNum:8, items:[
+      { seq:90, type:'Согласование', role:'Бизнес-тестировщик',                   desc:'Необходимо протестировать изменения в тестовой системе' },
+      { seq:90, type:'Согласование', role:'Эксперт этапа', sn:'Тестирование',     desc:'Необходимо протестировать изменения в тестовой системе' },
+      { seq:95, type:'Задача',        role:'Администратор',                        desc:'Перенос изменения в продуктивную среду' }
+    ]},
+    { stageName:'Подтверждение', stageNum:9, items:[
+      { seq:100, type:'Согласование', role:'Бизнес-тестировщик',                  desc:'Подтверждение выполненных работ' },
+      { seq:100, type:'Согласование', role:'Эксперт этапа', sn:'Подтверждение',   desc:'Необходимо подтвердить корректность изменений в продуктивной системе' }
+    ]},
+    { stageName:'Документирование', stageNum:10, items:[
+      { seq:110, type:'Задача', role:'Эксперт этапа', sn:'Документирование',      desc:'Документирование ТЗИ' }
+    ]},
+    { stageName:'Утверждение документации', stageNum:11, items:[
+      { seq:120, type:'Согласование', role:'Эксперт этапа', sn:'Утверждение документации', desc:'Согласование документации по ТЗИ' }
+    ]}
+  ]
+};
+
+// ── D is declared at top of script ──
+
+function getParticipants(participants, roleName, stageName) {
+  return participants.filter(p => {
+    if (p.role !== roleName) return false;
+    // For stage-specific roles, match stageName
+    if (p.stageName && stageName) return p.stageName === stageName;
+    if (p.stageName && !stageName) return false;
+    return true;
+  });
+}
+
+function buildCard(item, participants, stageNum, isSpecialFO) {
+  const ps = getParticipants(participants, item.role, item.sn || null);
+  const reqRole = isRequired(item.role, stageNum, isSpecialFO, item);
+
+  // Sort: required (assigned) first, then conditional
+  const assigned = ps.filter(p => p.required);
+  const conditional = ps.filter(p => !p.required);
+
+  // hasAssigned = has at least one REQUIRED participant (not just conditional)
+  const hasAssigned = assigned.length > 0;
+  const isMissing = reqRole && !hasAssigned;
+
+  const isAgree = item.type === 'Согласование';
+  const tClass = isAgree ? 'agree' : 'task';
+
+  const isCondCard = conditional.length > 0 && assigned.length === 0 && !isMissing;
+
+  const card = document.createElement('div');
+  card.className = 'card' + (isMissing ? ' card-alert' : (isCondCard ? ' card-cond' : ''));
+
+  // Color strip — first element inside card (for alignment anchor)
+  const strip = document.createElement('div');
+  let stripClass = 'card-strip ';
+  if (isAgree) {
+    stripClass += isMissing ? 'strip-agree-alert' : (isCondCard ? 'strip-agree-cond' : 'strip-agree');
+  } else {
+    stripClass += isMissing ? 'strip-agree-alert' : 'strip-task';
+  }
+  strip.className = stripClass;
+  card.appendChild(strip);
+
+  // Head: type badge + optional badge
+  const head = document.createElement('div');
+  head.className = 'card-head';
+  const optBadge = item.optional ? `<span class="type-badge tb-optional">Опционально</span>` : '';
+  head.innerHTML = `<span class="type-badge tb-${tClass}">${isAgree ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg>' : '<svg width="11" height="11" viewBox="0 0 24 24" fill="#fcd34d" stroke="#fcd34d" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'} ${item.type}</span>${optBadge}`;
+  card.appendChild(head);
+
+  // Description
+  const desc = document.createElement('div');
+  desc.className = 'card-desc';
+  desc.textContent = item.desc;
+  card.appendChild(desc);
+
+  // Participants section
+  const ptcp = document.createElement('div');
+  ptcp.className = 'card-ptcp';
+
+  const roleLabel = document.createElement('div');
+  roleLabel.className = 'ptcp-role-label';
+  roleLabel.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;vertical-align:middle;margin-right:4px;opacity:0.55;" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5" r="3" fill="#c0cae0"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#c0cae0" stroke-width="1.5" stroke-linecap="round"/></svg>' + item.role;
+  ptcp.appendChild(roleLabel);
+
+  // Assigned (required=true) first
+  assigned.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'p-row';
+    row.innerHTML = `<div class="p-dot ok"></div><div class="p-name">${p.name}</div>`;
+    ptcp.appendChild(row);
+  });
+
+  // Conditional (participationRequired=no): list names, note once at end
+  if (conditional.length > 0) {
+    conditional.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'p-row';
+      row.innerHTML = `<div class="p-dot cond"></div><div class="p-name cond">${p.name}</div>`;
+      ptcp.appendChild(row);
+    });
+    const noteEl = document.createElement('div');
+    noteEl.className = 'cond-note';
+    noteEl.textContent = 'Будет создано, если в самом ЗИ Координатор сделает обязательным';
+    ptcp.appendChild(noteEl);
+  }
+
+  // Unassigned
+  if (!hasAssigned) {
+    const row = document.createElement('div');
+    row.className = 'p-row';
+    if (reqRole) {
+      row.innerHTML = `<div class="p-dot miss"></div><div class="p-name miss">Не назначен</div>`;
+    } else {
+      row.innerHTML = `<div class="p-dot cond"></div><div class="p-name cond">Не назначен</div>`;
+    }
+    ptcp.appendChild(row);
+  }
+
+  card.appendChild(ptcp);
+
+  // Wrap card: bar floats above, card body below — so strip aligns across all cards
+  const wrap = document.createElement('div');
+  wrap.className = 'card-wrap' + (isMissing ? ' wrap-alert' : '');
+
+  if (isMissing) {
+    const bar = document.createElement('div');
+    bar.className = 'card-wrap-bar bar-alert';
+    bar.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Обязательно к назначению';
+    wrap.appendChild(bar);
+  } else if (isCondCard) {
+    const bar = document.createElement('div');
+    bar.className = 'card-wrap-bar bar-cond';
+    bar.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" style="vertical-align:-1px;margin-right:5px"><circle cx="5" cy="5" r="4.5" fill="#fb923c"/></svg>По умолчанию — не создавать';
+    wrap.appendChild(bar);
+  }
+  wrap.appendChild(card);
+
+  return { el: wrap, isMissing, isRequired: reqRole, hasAssigned };
+}
+
+function render() {
+  const canvas = document.getElementById('canvas');
+  canvas.innerHTML = '';
+
+  if (!D) {
+    canvas.innerHTML = '<div style="text-align:center;padding:100px 20px;color:rgba(255,255,255,.3);"><div style="margin-bottom:16px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div><div style="font-size:18px;font-weight:600;">Нет данных</div><div style="font-size:13px;margin-top:8px;">Откройте через кнопку «Маршрут ЗИ» в основном приложении</div></div>';
+    return;
+  }
+
+  const { foName, ziType, participants } = D;
+  document.getElementById('tbTitle').textContent = foName;
+  document.getElementById('tbSub').innerHTML = ziType === 'типовой'
+    ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Типовой ЗИ'
+    : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>Нетиповой ЗИ';
+  document.getElementById('tbBadge').innerHTML = '';
+
+  const isSpecialFO = SPECIAL_FO_KW.some(k => foName.includes(k));
+  const schema = SCHEMA[ziType] || [];
+
+  // ── Start node ──
+  const startNode = document.createElement('div');
+  startNode.className = 'flow-start';
+  startNode.innerHTML = `
+    <div class="start-circle" style="background:linear-gradient(135deg,#7c3aed,#a855f7)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+    <div class="start-label">Создание ЗИ</div>
+    <div class="start-sub">Инициирование нового изменения</div>`;
+  canvas.appendChild(startNode);
+  setTimeout(() => startNode.style.opacity = '1', 50);
+  startNode.style.opacity = '0';
+  startNode.style.transition = 'opacity .5s';
+
+  function addSpine() {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;padding:20px 0;position:relative;z-index:1;';
+    wrap.innerHTML = `<div style="display:flex;justify-content:center;padding:4px 0;filter:drop-shadow(0 0 8px rgba(99,102,241,0.9));"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(99,102,241,0.85)" stroke="none"><path d="M12 20l-8-12h16z"/></svg></div>`;
+    canvas.appendChild(wrap);
+  }
+
+  addSpine();
+
+  schema.forEach((stage, si) => {
+    if (si > 0) addSpine();
+
+    // Group items by seq
+    const seqMap = new Map();
+    stage.items.forEach(item => {
+      if (!seqMap.has(item.seq)) seqMap.set(item.seq, []);
+      seqMap.get(item.seq).push(item);
+    });
+    const seqs = [...seqMap.keys()].sort((a,b) => a - b);
+
+    // Check if any required item is missing
+    const hasMissing = stage.items.some(item => {
+      const reqRole = isRequired(item.role, stage.stageNum, isSpecialFO, item);
+      if (!reqRole) return false;
+      const ps = getParticipants(participants, item.role, item.sn || null);
+      return ps.length === 0;
+    });
+
+    const block = document.createElement('div');
+    block.className = 'stage-block';
+
+    // Stage header pill
+    const bg = STAGE_BG[stage.stageName] || 'linear-gradient(135deg,#334155,#64748b)';
+    const icon = STAGE_ICONS[stage.stageName] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+    const hdr = document.createElement('div');
+    hdr.className = 'stage-header' + (hasMissing ? ' stage-header-alert' : '');
+    hdr.style.background = bg;
+    hdr.innerHTML = `<span class="stage-icon">${icon}</span><span>${stage.stageName}</span>`;
+    block.appendChild(hdr);
+
+    // Seq rows
+    const seqRows = document.createElement('div');
+    seqRows.className = 'seq-rows';
+
+    seqs.forEach((seq, seqi) => {
+      const items = seqMap.get(seq);
+      const isParallel = items.length > 1;
+
+      if (seqi > 0) {
+        // Always show sequential separator between groups — even if current group is parallel
+        const sep = document.createElement('div');
+        sep.className = 'seq-separator';
+        sep.innerHTML = `<span class="sep-line"></span><span>↓ Последовательно</span><span class="sep-line"></span>`;
+        seqRows.appendChild(sep);
+      }
+
+      if (isParallel) {
+        const pl = document.createElement('div');
+        pl.className = 'par-label';
+        pl.innerHTML = `<span class="sep-line"></span><span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Параллельно</span><span class="sep-line"></span>`;
+        seqRows.appendChild(pl);
+      }
+
+      // Build all cards for this seq group — all centered, no split
+      let cardEls = items.map(item => buildCard(item, participants, stage.stageNum, isSpecialFO));
+
+      // Apply filter based on filterMode
+      if (filterMode === 'req') {
+        // Show only required role cards (whether assigned or not)
+        cardEls = cardEls.filter(c => c.isRequired);
+      } else if (filterMode === 'miss') {
+        // Hide unassigned non-required cards; keep assigned cards AND ⚠ required-but-unassigned cards
+        cardEls = cardEls.filter(c => c.hasAssigned || c.isMissing);
+      }
+
+      if (cardEls.length === 0) return;
+
+      const seqRow = document.createElement('div');
+      seqRow.className = 'seq-row';
+
+      cardEls.forEach(c => seqRow.appendChild(c.el));
+      seqRows.appendChild(seqRow);
+
+      // Add bottom line only on the last seq-row, and only if this stage has parallel groups
+      const stageHasParallel = seqs.some(s => seqMap.get(s).length > 1);
+      if (seqi === seqs.length - 1 && stageHasParallel) {
+        const bot = document.createElement('div');
+        bot.className = 'seq-bottom-line';
+        bot.innerHTML = '<span class="sep-line"></span>';
+        seqRows.appendChild(bot);
+      }
+    });
+
+    block.appendChild(seqRows);
+    canvas.appendChild(block);
+    setTimeout(() => block.classList.add('vis'), 120 + si * 100);
+  });
+
+  addSpine();
+
+  // End node
+  const endNode = document.createElement('div');
+  endNode.className = 'flow-end';
+  endNode.style.cssText = 'opacity:0;transition:opacity .5s;display:flex;flex-direction:column;align-items:center;';
+  endNode.innerHTML = `
+    <div class="start-circle" style="background:linear-gradient(135deg,#059669,#10b981);box-shadow:0 0 30px rgba(16,185,129,.5);"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
+    <div class="start-label" style="color:#6ee7b7;">ЗИ закрыт</div>
+    <div class="start-sub">Все этапы пройдены</div>`;
+  canvas.appendChild(endNode);
+  setTimeout(() => endNode.style.opacity = '1', 150 + schema.length * 100);
+}
+
+// ── Particles ──
+function particles() {
+  const c = document.getElementById('ptcl');
+  const ctx = c.getContext('2d');
+  function resize() { c.width = innerWidth; c.height = innerHeight; }
+  resize();
+  addEventListener('resize', resize);
+  const COLORS = [
+    [168,85,247], [99,102,241], [139,92,246], [167,139,250], [196,181,253]
+  ];
+  const pts = Array.from({length:90}, () => {
+    const col = COLORS[Math.floor(Math.random()*COLORS.length)];
+    return {
+      x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+      r:Math.random()*2+.3,
+      vx:(Math.random()-.5)*.28, vy:(Math.random()-.5)*.28,
+      a:Math.random()*.25+.06,
+      col
+    };
+  });
+  function draw() {
+    ctx.clearRect(0,0,c.width,c.height);
+    pts.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=c.width; if(p.x>c.width)p.x=0;
+      if(p.y<0)p.y=c.height; if(p.y>c.height)p.y=0;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.a})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+render();
+particles();
+
+// ── Предупреждение о неполных данных ──
+// DOM уже готов (скрипт в конце body), modal div объявлен выше
+(function() {
+  try {
+    const wMode = localStorage.getItem('routeVizWorkMode') || '';
+    const lType = localStorage.getItem('routeVizLoadType') || '';
+    const showWarning = (wMode === 'create') || (wMode === 'update' && lType === 'template');
+    if (showWarning) {
+      var modal = document.getElementById('routeWarningModal');
+      if (modal) modal.style.display = 'flex';
+    }
+    localStorage.removeItem('routeVizWorkMode');
+    localStorage.removeItem('routeVizLoadType');
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
